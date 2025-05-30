@@ -7,6 +7,9 @@ import com.project.capstone.dto.auth.RepositoryPasswordReturnDto;
 import com.project.capstone.repository.user.UserRepository;
 import com.project.capstone.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +22,7 @@ public class UserLoginService implements UserLoginServiceInterface {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
-    public UserLoginResponseDto login(UserLoginRequestDto userLoginRequestDto) {
+    public ResponseEntity login(UserLoginRequestDto userLoginRequestDto) {
         String requestId = userLoginRequestDto.getUserId();
         String requestPassword = userLoginRequestDto.getPassword();
         //이 아래에 일치하는지 확인도 로그인
@@ -33,9 +36,27 @@ public class UserLoginService implements UserLoginServiceInterface {
         } else {
             //여기에 로그인한 유저에게 Refresh 토큰을 넘겨주는거 추가하자
             User user = userRepository.findByUserId(requestId);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(requestId);
             user.setJwtRefreshToken(jwtTokenProvider.generateRefreshToken(requestId));
             userRepository.save(user);
-            return new UserLoginResponseDto(requestId, jwtTokenProvider.generateAccessToken(requestId), user.getJwtRefreshToken());
+
+            //쿠키 생성
+            ResponseCookie refreshTokenCookie = makeRefreshCookie(refreshToken);
+
+            //ResponseEntity로 변환
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .body(new UserLoginResponseDto(requestId, jwtTokenProvider.generateAccessToken(requestId)));
         }
+    }
+
+    public ResponseCookie makeRefreshCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(7*24*60*60)
+                .sameSite("Strict")
+                .build();
     }
 }

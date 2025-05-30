@@ -8,6 +8,7 @@ import com.project.capstone.service.signup.UserSignUpServiceInterface;
 import com.project.capstone.service.user.UserUpdateServiceInterface;
 import com.project.capstone.service.userinfo.UserInfoServiceInterface;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,7 @@ public class UserAuthController {
     private final UserLogOutServiceInterface userLogOutService;
 
     @PostMapping("/login")
-    public UserLoginResponseDto userLogIn(@RequestBody UserLoginRequestDto userLoginRequestDto) {
+    public ResponseEntity userLogIn(@RequestBody UserLoginRequestDto userLoginRequestDto) {
         // loginservice 실행해가지고!! 이제 일치하면~~ login 그리고 토큰을 지급한다.
 
         //사실 return은 LoginResponseDto를 해줘야한다. -> 토큰 발급해줘야지
