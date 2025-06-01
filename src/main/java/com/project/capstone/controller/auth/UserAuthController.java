@@ -40,9 +40,9 @@ public class UserAuthController {
     }
 
     @PostMapping("/logout")
-    public void userLogOut(){
+    public ResponseEntity userLogOut(){
 
-        userLogOutService.logout();
+        return userLogOutService.logout();
     };
 
     //Access 토큰 만료시 프론트에서 /reissue로 넘겨줘야함
