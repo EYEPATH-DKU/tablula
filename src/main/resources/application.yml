@@ -9,3 +9,6 @@ spring:
 logging:
   level:
     org.springframework: INFO
+
+jwt:
+  secert: ${JWT_SECRET_KEY}
